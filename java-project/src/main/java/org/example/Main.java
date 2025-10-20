@@ -9,7 +9,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            TaskExampleShowering.run(true);
+            TaskWordCounting.run(true);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

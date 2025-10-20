@@ -19,11 +19,24 @@ public class TaskWordCounting {
     {
         @Override
         public Iterator<String> call(String s) {
-            //You need remove punctuations from the string, convert to lower case
-            //and then split it by whitespace. Then put all strings that are some
-            //sequence of alphanumeric characters to list and return the list iterator
+            // Remove punctuations from the string
+            s.replaceAll("[^a-zA-Z0-9\\s]","");
 
-            return null; //Of course, you dont return null, but the iterator.
+            // Convert to lower case
+            s.toLowerCase();
+
+            // Split it by whitespace
+            List<String> intermediaryResult = new ArrayList<>();
+            intermediaryResult = Arrays.asList(s.split("\\s+"));
+
+            // Put all strings that are some sequence of alphanumeric characters to list
+            List<String> results = new ArrayList<>();
+            for (String word : intermediaryResult) {
+                if (word.matches("[a-zA-Z0-9]+")) {
+                    results.add(word);
+                }
+            }
+            return results.iterator(); // return the list as an iterator
         }
 
     }
@@ -35,7 +48,7 @@ public class TaskWordCounting {
         SparkConf sparkConf = null;
 
         String datasetFileName = "dataset-wordcount.txt";
-        String datasetFilePath ="../datasets/" + datasetFileName;
+        String datasetFilePath ="datasets/" + datasetFileName;
         String applicationName = "WordCount";
         String hdfsDatasetPath = "hdfs://namenode:9000/datasets/";
         String sparkMaster = "spark://spark-master:7077";
@@ -58,7 +71,7 @@ public class TaskWordCounting {
 
         //Step-A: using the available textFile, create a flat map of words by calling the WordMapper.
         LOGGER.info("Flat mapping to create word list");
-
+        JavaRDD<String> words = textFile.flatMap(new WordMapper());
 
         //-------------------------------------------------------------------------------------------
         Date t1 = new Date();
@@ -67,7 +80,7 @@ public class TaskWordCounting {
 
         //Step B: Now invoke a mapping function that will create key value-pair for each word in the list
         LOGGER.info("Mapping function");
-
+        JavaPairRDD<String, Integer> wordPairs = words.mapToPair(word -> new Tuple2<>(word, 1));
 
         //-------------------------------------------------------------------------------------------
         Date t2 = new Date();
@@ -75,7 +88,7 @@ public class TaskWordCounting {
 
         //Step C: Invoke a Reduce function that will sum up the values (against each key)
         LOGGER.info("Reducing function");
-
+        JavaPairRDD<String, Integer> summedValues = wordPairs.reduceByKey((a,b) -> a + b);
 
         //-------------------------------------------------------------------------------------------
         Date t3 = new Date();
@@ -83,7 +96,10 @@ public class TaskWordCounting {
 
         //Step D: Finally, output the counts for each word
         LOGGER.info("Collecting to driver");
-
+        List<Tuple2<String, Integer>> output = summedValues.collect();
+        for (Tuple2<String, Integer> tuple : output) {
+            System.out.println(tuple._1() + " : " + tuple._2());
+        }
 
         //-------------------------------------------------------------------------------------------
         Date t4 = new Date();
