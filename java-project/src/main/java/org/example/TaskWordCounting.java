@@ -56,7 +56,7 @@ public class TaskWordCounting {
         Date t0 = new Date(); //Mark the start timestamp
 
         if(local){
-            sparkConf = new SparkConf().setAppName(applicationName).setMaster("local[*]").set("spark.executor.instances", "1").set("spark.executor.instances", "10") .set("spark.executor.memory", "4g");
+            sparkConf = new SparkConf().setAppName(applicationName).setMaster("local[*]");
         }else {
             datasetFilePath = hdfsDatasetPath + datasetFileName;
             sparkConf = new SparkConf().setAppName(applicationName).setMaster(sparkMaster);
