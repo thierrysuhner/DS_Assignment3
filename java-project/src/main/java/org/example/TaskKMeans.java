@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import static org.apache.spark.sql.functions.col;
+
 public class TaskKMeans implements Serializable {
 
     public static class DataPoint implements Serializable {
@@ -110,7 +112,7 @@ public class TaskKMeans implements Serializable {
         rawData = rawData.drop("timestamp").drop("unix_timestamp");
 
         //Filter out potentially noisy data
-        //rawData = rawData.filter();
+        rawData = rawData.filter(col("volume").geq(50));
 
         System.out.println("Schema of loaded CSV:");
         rawData.printSchema();

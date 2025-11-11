@@ -82,7 +82,7 @@ public class TaskRoomSensorTelemetry {
                     )
                     .orderBy("month");
 
-            System.out.println("\n--- Month-wise maximum CO2 increase and decrease results ---");
+            System.out.println("\n--- Month-wise maximum CO2 increase and decrease within one hour ---");
             monthWiseResults.show();
 
             //-------------------------------------------------------------------------------------------
