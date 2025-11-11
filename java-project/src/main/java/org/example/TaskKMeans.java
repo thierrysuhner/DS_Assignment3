@@ -8,15 +8,12 @@ import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.execution.streaming.state.StreamingAggregationStateManagerImplV1;
 import scala.Tuple2;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import static org.apache.spark.sql.functions.col;
 
@@ -80,7 +77,7 @@ public class TaskKMeans implements Serializable {
 
         for (int i = 0; i < centroids.size(); i++) {
             double distance = euclideanDistance(point.getFeatures(), centroids.get(i).getFeatures());
-            // check if the distance is smaller then the minDistance saved, if yes this centroid is closer
+            // check if the distance is smaller than the minDistance saved, if yes this centroid is closer
             if (distance < minDistance) {
                 minDistance = distance;
                 closestCentroidId = i;
@@ -229,10 +226,9 @@ public class TaskKMeans implements Serializable {
         testDataRDD.mapToPair(point -> {
             int finalClusterId = findClosestCentroid(point, finalCentroidsBroadcast.value());
             return new Tuple2<>(point, finalClusterId);
-        }).collect().forEach(result -> {
-            System.out.println("Test Point: " + Arrays.toString(result._1().getFeatures()) +
-                    ", Assigned Cluster: " + result._2());
-        });
+        }).collect().forEach(result ->
+                System.out.println("Test Point: " + Arrays.toString(result._1().getFeatures()) +
+                ", Assigned Cluster: " + result._2()));
 
 
         // Stop Spark Session
