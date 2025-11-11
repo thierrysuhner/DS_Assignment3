@@ -51,6 +51,9 @@ The key step here is the immediate counting in local map, where *localCounts.get
 
 3. In local execution mode (i.e. standalone mode), change the number of cores that is allocated by the master (.setMaster("local[<n>]") and measure the time it takes for the applicationto complete in each case. For each value of core allocation, run the experiment 5 times (to rule out large variances). Plot a graph showing the time taken for completion (with standard deviation) vs the number of cores allocated. Interpret and explain the results briefly in few sentences. (0.4 pt)
 
+![Times Chart Plot](/images/times_chart.png)
+
+
 Our results were more or less the same for each number of cores used with an average execution time of around 1000ms - 1080ms. This is because the division of the partition to the executors will always just be 1 executor/partition, so there is no split up whatsoever. That's because one core is powerful enough to do the computation, so no matter how many we assign in the Spark Config, it always decides to just use one. Another interesting finding is that when allocating only one or two cores, but also when allocating 10 cores, the standard deviation is higher than in the other cases. We think that could happen because of small timing differences (like GC, thread startup, etc.) in the case of one or two cores, and due to more overhead induced by creating the extra threads (that are just idling as they have no task) in case of the 10 core allocation.
 
 

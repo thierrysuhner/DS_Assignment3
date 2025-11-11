@@ -87,37 +87,6 @@ public class TaskKMeans implements Serializable {
         return closestCentroidId;
     }
 
-   // ----- Old method used before parallelizing the program -----
-   //
-   // /**
-   //  * Calculates the new centroid (mean) for a cluster of data points.
-   //  * @param pointsInCluster An Iterable of data points belonging to one cluster.
-   //  * @return A new DataPoint representing the mean of the cluster.
-   //  */
-   // public static DataPoint calculateNewCentroid(Iterable<DataPoint> pointsInCluster) {
-   //     int count = 0;
-   //     double[] sumFeatures = null;
-   //
-   //
-   //     for (DataPoint point : pointsInCluster) {
-   //         if (sumFeatures == null) {
-   //             sumFeatures = new double[point.getFeatures().length];
-   //         }
-   //         for (int i = 0; i < point.getFeatures().length; i++) {
-   //             sumFeatures[i] += point.getFeatures()[i];
-   //         }
-   //         count++;
-   //     }
-   //
-   //     // Compute mean
-   //     for (int i = 0; i < sumFeatures.length; i++) {
-   //         sumFeatures[i] /= count;
-   //     }
-   //
-   //     return new DataPoint(sumFeatures);
-   // }
-
-
     public static void run(boolean local) {
         //Initialize Spark Session
         SparkConf sparkConf = null;
