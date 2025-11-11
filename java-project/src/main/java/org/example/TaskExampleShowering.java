@@ -13,9 +13,12 @@ import static org.apache.spark.sql.functions.*; // Import Spark SQL functions
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
+
 public class TaskExampleShowering {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskExampleShowering.class);
     public static void run(boolean local){
+        Date startTime = new Date();
         SparkSession sparkSession = null;
 
         try {
@@ -54,7 +57,9 @@ public class TaskExampleShowering {
 
             LOGGER.info("\nYearly Temperature Pattern Results:");
             yearlyPattern.show();
+            Date endTime = new Date();
 
+            System.out.printf("Completion Time: %d\n", endTime.getTime() - startTime.getTime());
             LOGGER.info("\nCongratulations! You have run your first Spark application in {} mode", local ? "local" : "cluster");
 
         } catch (Exception e) {

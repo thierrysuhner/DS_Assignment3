@@ -61,7 +61,7 @@ public class TaskKMeans implements Serializable {
         double sum = 0.0;
         for (int i = 0; i < v1.length; i++) {
             double diff = v1[i] - v2[i];
-            sum += diff * diff;
+            sum += diff * diff; // add the squared difference to the sum
         }
         return Math.sqrt(sum);
     }
@@ -78,6 +78,7 @@ public class TaskKMeans implements Serializable {
 
         for (int i = 0; i < centroids.size(); i++) {
             double distance = euclideanDistance(point.getFeatures(), centroids.get(i).getFeatures());
+            // check if the distance is smaller then the minDistance saved, if yes this centroid is closer
             if (distance < minDistance) {
                 minDistance = distance;
                 closestCentroidId = i;
@@ -86,32 +87,35 @@ public class TaskKMeans implements Serializable {
         return closestCentroidId;
     }
 
-    /**
-     * Calculates the new centroid (mean) for a cluster of data points.
-     * @param pointsInCluster An Iterable of data points belonging to one cluster.
-     * @return A new DataPoint representing the mean of the cluster.
-     */
-    public static DataPoint calculateNewCentroid(Iterable<DataPoint> pointsInCluster) {
-        int count = 0;
-        double[] sumFeatures = null;
-
-        for (DataPoint point : pointsInCluster) {
-            if (sumFeatures == null) {
-                sumFeatures = new double[point.getFeatures().length];
-            }
-            for (int i = 0; i < point.getFeatures().length; i++) {
-                sumFeatures[i] += point.getFeatures()[i];
-            }
-            count++;
-        }
-
-        // Compute mean
-        for (int i = 0; i < sumFeatures.length; i++) {
-            sumFeatures[i] /= count;
-        }
-
-        return new DataPoint(sumFeatures);
-    }
+   // ----- Old method used before parallelizing the program -----
+   //
+   // /**
+   //  * Calculates the new centroid (mean) for a cluster of data points.
+   //  * @param pointsInCluster An Iterable of data points belonging to one cluster.
+   //  * @return A new DataPoint representing the mean of the cluster.
+   //  */
+   // public static DataPoint calculateNewCentroid(Iterable<DataPoint> pointsInCluster) {
+   //     int count = 0;
+   //     double[] sumFeatures = null;
+   //
+   //
+   //     for (DataPoint point : pointsInCluster) {
+   //         if (sumFeatures == null) {
+   //             sumFeatures = new double[point.getFeatures().length];
+   //         }
+   //         for (int i = 0; i < point.getFeatures().length; i++) {
+   //             sumFeatures[i] += point.getFeatures()[i];
+   //         }
+   //         count++;
+   //     }
+   //
+   //     // Compute mean
+   //     for (int i = 0; i < sumFeatures.length; i++) {
+   //         sumFeatures[i] /= count;
+   //     }
+   //
+   //     return new DataPoint(sumFeatures);
+   // }
 
 
     public static void run(boolean local) {
@@ -164,6 +168,7 @@ public class TaskKMeans implements Serializable {
             return new DataPoint(features);
         }).cache(); // Cache the RDD as it will be used multiple times
 
+        // Do the same but now for test data
         JavaRDD<DataPoint> testDataRDD = testDataset.javaRDD().map(row -> {
             double[] features = new double[row.length()];
             for (int i = 0; i < row.length(); i++) {
@@ -189,7 +194,7 @@ public class TaskKMeans implements Serializable {
         for (int iter = 0; iter < maxIterations; iter++) {
             System.out.println("\nIteration " + (iter + 1));
 
-            // Broadcast current centroids to all worker nodes
+            // Broadcast current centroids to all worker nodes for data locality
             Broadcast<List<DataPoint>> centroidsBroadcast = jsc.broadcast(currentCentroids);
 
             // E-step: Assign each training data point to its closest centroid
@@ -198,7 +203,7 @@ public class TaskKMeans implements Serializable {
                 return new Tuple2<>(closestCentroidId, point);
             });
 
-            // M-step: Calculate new centroids using sum and count aggregation (more scalable)
+            // M-step: Calculate new centroids using sum and count aggregation -> in parallel
             JavaPairRDD<Integer, Tuple2<double[], Integer>> centroidSums = clusteredPoints
                     .mapToPair(tuple -> {
                         double[] features = tuple._2().getFeatures();
